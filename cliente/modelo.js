@@ -7,13 +7,11 @@ function Juego(){
 		}
 	}
 	this.unirAPartida=function(codigo,nick){
-		if (this.partidas[codigo] && this.faltan(codigo)){
+		if (this.partidas[codigo]){
 			this.partidas[codigo].agregarUsuario(nick);
 		}
 	}
-	this.faltan=function(codigo){
-		return Object.keys(juego.partidas[codigo].usuarios).length<this.partidas[codigo].maximo;
-	}
+	
 	this.obtenerCodigo=function(){
 		let cadena="ABCDEFGHIJKLMNOPQRSTUVXYZ";
 		let letras=cadena.split('');
@@ -48,7 +46,12 @@ function Partida(num,owner){
 
 function Inicial(){
 	this.agregarUsuario=function(nick,partida){
-		partida.puedeAgregarUsuario(nick);
+		if (Object.keys(partida.usuarios).length>=partida.maximo){
+			partida.fase=new Jugando();
+		}
+		else{
+			partida.puedeAgregarUsuario(nick);
+		}
 	}
 }
 
