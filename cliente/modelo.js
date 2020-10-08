@@ -40,18 +40,16 @@ function Partida(num,owner){
 			contador=contador+1;
 		}
 		this.usuarios[nuevo]=new Usuario(nuevo);
+		if (Object.keys(this.usuarios).length>=this.maximo){
+			this.fase=new Jugando();
+		}
 	}
 	this.agregarUsuario(owner);
 }
 
 function Inicial(){
 	this.agregarUsuario=function(nick,partida){
-		if (Object.keys(partida.usuarios).length>=partida.maximo){
-			partida.fase=new Jugando();
-		}
-		else{
-			partida.puedeAgregarUsuario(nick);
-		}
+		partida.puedeAgregarUsuario(nick);		
 	}
 }
 
