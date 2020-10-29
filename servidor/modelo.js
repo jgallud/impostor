@@ -35,6 +35,19 @@ function Juego(){
 	this.eliminarPartida=function(codigo){
 		delete this.partidas[codigo];
 	}
+	this.listaPartidas=function(){
+		var lista=[];
+		var huecos=0;
+		for (var key in this.partidas){
+			var partida=this.partidas[key];
+			huecos=partida.obtenerHuecos();
+			if (huecos>0)
+			{
+			  lista.push({"codigo":key,"huecos":huecos});
+			}
+		}
+		return lista;
+	}
 }
 
 function Partida(num,owner,codigo){
@@ -58,6 +71,9 @@ function Partida(num,owner,codigo){
 		this.usuarios[nuevo].partida=this;
 		//this.comprobarMinimo();
 		return 0;
+	}
+	this.obtenerHuecos=function(){
+		return this.maximo-this.numeroJugadores();
 	}
 	this.numeroJugadores=function(){
 		return Object.keys(this.usuarios).length;
@@ -140,7 +156,7 @@ function Partida(num,owner,codigo){
 	}
 	this.masVotado=function(){
 		let votado=undefined;
-		let max=0;
+		let max=1;
 		for (var key in this.usuarios) {
 			if (max<this.usuarios[key].votos){
 				max=this.usuarios[key].votos;
