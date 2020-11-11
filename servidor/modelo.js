@@ -64,6 +64,27 @@ function Juego(){
 			this.partidas[codigo].iniciarPartida();
 		}
 	}
+	this.lanzarVotacion=function(nick,codigo){
+		var usr=this.partidas[codigo].usuarios[nick];
+		usr.lanzarVotacion();
+	}
+	this.saltarVoto=function(nick,codigo){
+		var usr=this.partidas[codigo].usuarios[nick];
+		usr.saltarVoto();
+	}
+	this.votar=function(nick,codigo,sospechoso){
+		var usr=this.partidas[codigo].usuarios[nick];
+		//usr=this.partidas[codigo].obtenerUsuario(nick)
+		usr.votar(sospechoso);
+	}
+	this.obtenerEncargo=function(nick,codigo){
+		var res={};
+		var encargo=this.partidas[codigo].usuarios[nick].encargo;
+		var impostor=this.partidas[codigo].usuarios[nick].impostor;
+		res={"encargo":encargo,"impostor":impostor};
+
+		return res;
+	}
 }
 
 function Partida(num,owner,codigo,juego){
@@ -73,6 +94,7 @@ function Partida(num,owner,codigo,juego){
 	this.juego=juego;
 	this.fase=new Inicial();
 	this.usuarios={};
+	this.elegido="no hay nadie elegido";
 	this.encargos=["jardines","mobiliario","basuras","calles"];
 	this.agregarUsuario=function(nick){
 		return this.fase.agregarUsuario(nick,this)
@@ -142,7 +164,7 @@ function Partida(num,owner,codigo,juego){
 	}
 	this.puedeAtacar=function(inocente){
 		this.usuarios[inocente].esAtacado();
-		this.comprobarFinal();
+		//this.comprobarFinal();
 	}
 	this.numeroImpostoresVivos=function(){
 		let cont=0;
@@ -169,13 +191,14 @@ function Partida(num,owner,codigo,juego){
 		return (this.numeroImpostoresVivos()==0);
 	}
 	this.votar=function(sospechoso){
-		this.fase.votar(sospechoso)
+		this.fase.votar(sospechoso,this)
 	}
 	this.puedeVotar=function(sospechoso){
 		this.usuarios[sospechoso].esVotado();
+		this.comprobarVotacion();
 	}
 	this.masVotado=function(){
-		let votado=undefined;
+		let votado="no hay nadie mas votado";
 		let max=1;
 		for (var key in this.usuarios) {
 			if (max<this.usuarios[key].votos){
@@ -183,6 +206,8 @@ function Partida(num,owner,codigo,juego){
 				votado=this.usuarios[key];
 			}
 		}
+		//comprobar que solo hay 1 más votado
+
 		return votado;
 	}
 	this.numeroSkips=function(){
@@ -194,10 +219,46 @@ function Partida(num,owner,codigo,juego){
 		}
 		return cont;
 	}
+	this.todosHanVotado=function(){
+		let res=true;
+		for (var key in this.usuarios) {
+			if (this.usuarios[key].estado.nombre=="vivo" && !this.usuarios[key].haVotado){
+				res=false;
+				break;
+			}
+		}
+		return res;
+	}
+	this.listaHanVotado=function(){
+		var lista=[];
+		for (var key in this.usuarios) {
+			if (this.usuarios[key].estado.nombre=="vivo" && this.usuarios[key].haVotado){
+				lista.push(key);
+			}
+		}
+		return lista;
+	}
 	this.comprobarVotacion=function(){
-		let elegido=this.masVotado();
-		if (elegido && elegido.votos>this.numeroSkips()){
-			elegido.esAtacado();
+		if (this.todosHanVotado()){
+			let elegido=this.masVotado();
+			if (elegido && elegido.votos>this.numeroSkips()){
+				elegido.esAtacado();
+				this.elegido=elegido.nick;
+			}
+			this.finalVotacion();
+		}
+	}
+	this.finalVotacion=function(){
+		this.fase=new Jugando();
+		this.reiniciarContadoresVotaciones(); 
+		this.comprobarFinal();
+	}
+	this.reiniciarContadoresVotaciones=function(){
+		this.elegido="no hay nadie elegido";
+		for (var key in this.usuarios) {
+			if (this.usuarios[key].estado.nombre=="vivo"){
+				this.usuarios[key].reiniciarContadoresVotaciones();
+			}
 		}
 	}
 	this.comprobarFinal=function(){
@@ -283,19 +344,23 @@ function Jugando(){
 	this.lanzarVotacion=function(partida){
 		partida.puedeLanzarVotacion();
 	}
+	this.votar=function(sospechoso,partida){}
 }
 
 function Votacion(){
-	this.final="votacion";
+	this.nombre="votacion";
 	this.agregarUsuario=function(nick,partida){}
 	this.iniciarPartida=function(partida){}
 	this.abandonarPartida=function(nick,partida){}
 	this.atacar=function(inocente){}
 	this.lanzarVotacion=function(){}
+	this.votar=function(sospechoso,partida){
+		partida.puedeVotar(sospechoso);
+	}
 }
 
 function Final(){
-	this.final="final";
+	this.nombre="final";
 	this.agregarUsuario=function(nick,partida){
 		console.log("La partida ha terminado");
 	}
@@ -337,6 +402,8 @@ function Usuario(nick){
 	}
 	this.saltarVoto=function(){
 		this.skip=true;
+		this.haVotado=true;
+		this.partida.comprobarVotacion();
 	}
 	this.lanzarVotacion=function(){
 		this.estado.lanzarVotacion(this);
@@ -351,6 +418,11 @@ function Usuario(nick){
 	this.esVotado=function(){
 		this.votos++;
 	}
+	this.reiniciarContadoresVotaciones=function(){
+		this.votos=0;
+		this.haVotado=false;
+		this.skip=false;
+	}
 
 }
 
@@ -358,6 +430,7 @@ function Vivo(){
 	this.nombre="vivo";
 	this.esAtacado=function(usr){
 		usr.estado=new Muerto();
+		usr.partida.comprobarFinal();
 	}
 	this.lanzarVotacion=function(usr){
 		usr.puedeLanzarVotacion();

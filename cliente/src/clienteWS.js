@@ -23,6 +23,18 @@ function ClienteWS(){
 	this.listaPartidas=function(){
 		this.socket.emit("listaPartidas");
 	}
+	this.lanzarVotacion=function(){
+		this.socket.emit("lanzarVotacion",this.nick,this.codigo);
+	}
+	this.saltarVoto=function(){
+		this.socket.emit("saltarVoto",this.nick,this.codigo);
+	}
+	this.votar=function(sospechoso){
+		this.socket.emit("votar",this.nick,this.codigo,sospechoso);
+	}
+	this.obtenerEncargo=function(){
+		this.socket.emit("obtenerEncargo",this.nick,this.codigo);
+	}
 
 	//servidor WS dentro del cliente
 	this.lanzarSocketSrv=function(){
@@ -51,22 +63,41 @@ function ClienteWS(){
 		});
 		this.socket.on('recibirListaPartidas',function(lista){
 			console.log(lista);
+		});
+		this.socket.on("votacion",function(data){
+			console.log(data);
+		});
+		this.socket.on("finalVotacion",function(data){
+			console.log(data);
+		});
+		this.socket.on("haVotado",function(data){
+			console.log(data);
+		});
+		this.socket.on("recibirEncargo",function(data){
+			console.log(data);
 		})
 	}
 
 	this.ini();
 }
 
-
-function pruebasWS(codigo){
-	var ws2=new ClienteWS();
-	var ws3=new ClienteWS();
-	var ws4=new ClienteWS();
-	//var codigo=ws.codigo;
+var ws2,ws3,ws4;
+function pruebasWS(){
+	ws2=new ClienteWS();
+	ws3=new ClienteWS();
+	ws4=new ClienteWS();
+	var codigo=ws.codigo;
 
 	ws2.unirAPartida("Juani",codigo);
 	ws3.unirAPartida("Juana",codigo);
 	ws4.unirAPartida("Juanan",codigo);
 
 	//ws.iniciarPartida();
+}
+
+function saltarVotos(){
+	ws.saltarVoto();
+	ws2.saltarVoto();
+	ws3.saltarVoto();
+	ws4.saltarVoto();
 }
