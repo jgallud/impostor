@@ -35,6 +35,9 @@ function ClienteWS(){
 	this.obtenerEncargo=function(){
 		this.socket.emit("obtenerEncargo",this.nick,this.codigo);
 	}
+	this.atacar=function(inocente){
+		this.socket.emit("atacar",this.nick,this.codigo,inocente);
+	}
 
 	//servidor WS dentro del cliente
 	this.lanzarSocketSrv=function(){
@@ -75,7 +78,13 @@ function ClienteWS(){
 		});
 		this.socket.on("recibirEncargo",function(data){
 			console.log(data);
-		})
+		});
+		this.socket.on("final",function(data){
+			console.log(data);
+		});
+		this.socket.on("muereInocente",function(data){
+			console.log(data);
+		});
 	}
 
 	this.ini();
@@ -100,4 +109,11 @@ function saltarVotos(){
 	ws2.saltarVoto();
 	ws3.saltarVoto();
 	ws4.saltarVoto();
+}
+
+function encargos(){
+	ws.obtenerEncargo();
+	ws2.obtenerEncargo();
+	ws3.obtenerEncargo();
+	ws4.obtenerEncargo();
 }
