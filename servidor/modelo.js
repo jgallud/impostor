@@ -202,7 +202,8 @@ function Partida(num,owner,codigo,juego){
 		this.comprobarVotacion();
 	}
 	this.masVotado=function(){
-		let votado="no hay nadie mas votado";
+		let votado=undefined;
+		let cont=0;
 		let max=1;
 		for (var key in this.usuarios) {
 			if (max<this.usuarios[key].votos){
@@ -210,8 +211,15 @@ function Partida(num,owner,codigo,juego){
 				votado=this.usuarios[key];
 			}
 		}
-		//comprobar que solo hay 1 más votado
+		for (var key in this.usuarios) {
+			if (max==this.usuarios[key].votos){
+				cont++;
+			}
+		}
 
+		if (cont>1){
+			votado=undefined;
+		}
 		return votado;
 	}
 	this.numeroSkips=function(){
