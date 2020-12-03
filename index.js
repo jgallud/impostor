@@ -24,6 +24,12 @@ app.get('/', function (request, response) {
     response.send(contenido);    
 });
 
+app.get('/game', function (request, response) {
+    var contenido = fs.readFileSync(__dirname + "/cliente/index-game.html"); 
+    response.setHeader("Content-type", "text/html");
+    response.send(contenido); 
+});
+
 app.get("/crearPartida/:nick/:num",function(request,response){
 	var nick=request.params.nick;
 	var num=parseInt(request.params.num);
