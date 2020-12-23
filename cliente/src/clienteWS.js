@@ -113,15 +113,20 @@ function ClienteWS(){
 		this.socket.on("moverRemoto",function(datos){
 			mover(datos);
 		})
-		this.socket.on("votacion",function(data){
-			console.log(data);
-			//dibujarVotacion(lista)
+		this.socket.on("votacion",function(lista){
+			console.log(lista);
+			cw.mostrarModalVotacion(lista);
 		});
 		this.socket.on("finalVotacion",function(data){
 			console.log(data);
+			//cw.cerrarModal()
+			$('#modalGeneral').modal('toggle');
+			//mostrar otro modal
+			cw.mostrarModalSimple(data.elegido);
 		});
 		this.socket.on("haVotado",function(data){
 			console.log(data);
+			//actualizar la lista
 		});
 		this.socket.on("recibirEncargo",function(data){
 			console.log(data);
