@@ -4,6 +4,9 @@ function ClienteWS(){
 	this.codigo=undefined;
 	this.owner=false;
 	this.numJugador=undefined;
+	this.impostor;
+	this.estado;
+	this.encargo;
 	this.ini=function(){
 		this.socket=io.connect();
 		this.lanzarSocketSrv();
@@ -47,6 +50,9 @@ function ClienteWS(){
 		var datos={nick:this.nick,codigo:this.codigo,numJugador:this.numJugador,direccion:direccion,x:x,y:y};
 		this.socket.emit("movimiento",datos);
 	}
+	this.realizarTarea=function(){
+		this.socket.emit("realizarTarea",this.nick,this.codigo);
+	}
 
 	//servidor WS dentro del cliente
 	this.lanzarSocketSrv=function(){
@@ -60,6 +66,7 @@ function ClienteWS(){
 			if (data.codigo!="fallo"){
 				cli.owner=true;
 				cli.numJugador=0;
+				cli.estado="vivo";
 				cw.mostrarEsperandoRival();
 			}
 		});
@@ -67,6 +74,7 @@ function ClienteWS(){
 			cli.codigo=data.codigo;
 			cli.nick=data.nick;
 			cli.numJugador=data.numJugador;
+			cli.estado="vivo";
 			console.log(data);
 			cw.mostrarEsperandoRival();
 		});
@@ -100,12 +108,14 @@ function ClienteWS(){
 					lanzarJugadorRemoto(lista[i].nick,lista[i].numJugador);
 				}
 			}
+			crearColision();
 		});
 		this.socket.on("moverRemoto",function(datos){
 			mover(datos);
 		})
 		this.socket.on("votacion",function(data){
 			console.log(data);
+			//dibujarVotacion(lista)
 		});
 		this.socket.on("finalVotacion",function(data){
 			console.log(data);
@@ -115,12 +125,33 @@ function ClienteWS(){
 		});
 		this.socket.on("recibirEncargo",function(data){
 			console.log(data);
+			cli.impostor=data.impostor;
+			cli.encargo=data.encargo;
+			if (data.impostor){
+				//$('#avisarImpostor').modal("show");
+				cw.mostrarModalSimple('eres el impostor');
+				//crearColision();
+			}
 		});
 		this.socket.on("final",function(data){
 			console.log(data);
+			finPartida(data);
 		});
-		this.socket.on("muereInocente",function(data){
+		this.socket.on("muereInocente",function(inocente){
+			console.log('muere '+inocente);
+			if (cli.nick==inocente){
+				cli.estado="muerto";
+			}
+			dibujarMuereInocente(inocente);
+		});
+		this.socket.on("tareaRealizada",function(data){
 			console.log(data);
+			//tareasOn=true;
+		});
+		this.socket.on("hasAtacado",function(fase){
+			if (fase=="jugando"){
+				ataquesOn=true;
+			}
 		});
 	}
 
