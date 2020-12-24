@@ -222,6 +222,15 @@ function Partida(num,owner,codigo,juego){
 		}
 		return cont;
 	}
+	this.numeroCiudadanos=function(){
+		let cont=0;
+		for (var key in this.usuarios) {
+			if (!this.usuarios[key].impostor){
+				cont++;
+			}
+		}
+		return cont;
+	}
 	this.gananImpostores=function(){
 		return (this.numeroImpostoresVivos()>=this.numeroCiudadanosVivos());
 	}
@@ -354,9 +363,12 @@ function Partida(num,owner,codigo,juego){
 	this.obtenerPercentGlobal=function(){
 		var total=0;
 		for(var key in this.usuarios){
-			total=total+this.obtenerPercentTarea(key);
+			if (!this.usuarios[key].impostor)
+			{
+				total=total+this.obtenerPercentTarea(key);
+			}
 		}
-		total=total/this.numeroJugadores();
+		total=total/this.numeroCiudadanos();
 		return total;
 	}
 	this.agregarUsuario(owner);
